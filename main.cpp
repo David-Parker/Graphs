@@ -6,9 +6,11 @@
 #include <map>
 #include <stdio.h>
 #include "lib.h"
-
+#include "graph.h"
 using namespace std;
 int main() {
-	print("Hey");
+	uni_graph<int, string> g;
+	g.addEdge("Boston", "Plymouth",50);
+	g.addEdge("Austin", "Boston",3000);
 	return 0;
 }
