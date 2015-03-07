@@ -7,10 +7,13 @@
 #include <stdio.h>
 #include "lib.h"
 #include "graph.h"
+
 using namespace std;
 int main() {
-	uni_graph<int, string> g;
+	bi_graph<double, string> g;
 	g.addEdge("Boston", "Plymouth",50);
 	g.addEdge("Austin", "Boston",3000);
+	g.addEdge("Austin", "Seattle",3500);
+	g.printEdges();
 	return 0;
 }

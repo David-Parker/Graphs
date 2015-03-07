@@ -1,7 +1,7 @@
 #include <unordered_map>
+#include <iostream>
 #include <vector>
 #include <string>
-#include "lib.h"
 
 #define graphtypes template<typename _wgt, typename _id>
 #define types _wgt,_id
@@ -40,7 +40,6 @@ public:
 	vertex(_id name) : id(name), edges() {edges = new std::vector<edge<types>>();}
 	void pushEdge(edge<types>& e) {
 		edges->push_back(e);
-		std::cout << "name: " << e.getDest().getId() << " size: " << edges->size() << std::endl;
 	}
 	_id getId() { return id; }
 	std::vector<edge<types>> getEdges() { return *edges; }
@@ -56,33 +55,18 @@ public:
 	graph() : verticies() {}
 	virtual ~graph() {}
 	virtual void addEdge(const _id& d, const _id& s, const _wgt& w) = 0;
-	// void printEdges() {
-	// 	for(auto& v: verticies) {
-	// 		print("hey");
-	// 		for(edge<types>& e : v.second.getEdges()) {
-	// 			print("here/n");
-	// 			std::cout << v.second.getId() << "--" << e.getDistance() << "--" << e.getDest().getId() << std::endl;
-	// 			// print(v.second.getId())
-	// 			// print(e.getDest().getId());
-	// 		}
-	// 	}
-	// }
 };
 
 graphtypes
 class uni_graph : public graph<types> {
-private:
+protected:
 	vertex<types> findVertex(const _id& id) {
 		auto dlookup = graph<types>::verticies.find(id);
 
 		if(dlookup != graph<types>::verticies.end()) {
-			std::cout << "Found existing vertex: " << dlookup->second.getId() << std::endl;
 			return (dlookup->second);
 		}
 		else {
-			// vertex<types> *new_d = new vertex<types>(id);
-			// graph<types>::verticies[id] = *new_d;
-			// return *new_d;
 			vertex<types> new_d(id);
 			graph<types>::verticies[id] = new_d;
 			return new_d;
@@ -91,30 +75,36 @@ private:
 
 public:
 	uni_graph() : graph<types>() {}
+	virtual ~uni_graph() {}
 	virtual void addEdge(const _id& d, const _id& s, const _wgt& w) {
 		vertex<types> origin = findVertex(d);
 		vertex<types> dest = findVertex(s);
-
-		// std::cout << "adding: " << origin.getId() << std::endl;
-		// std::cout << "adding: " << dest.getId() << std::endl;
-		// edge<types> *e = new edge<types>(dest,w);
-		// origin.pushEdge(*e);
 		edge<types> e(dest,w);
 		origin.pushEdge(e);
-		// for(edge<types>& e : origin.getEdges())
-			// print(e.getDest().getId());
 	}
 
 	void printEdges() {
 		for(auto& v: graph<types>::verticies) {
-			std::cout << v.second.getId() << std::endl;
-			// print(v.second.getEdges().size());
+			std::cout << std::endl << v.second.getId() << ": " << std::endl;
 			for(edge<types>& e : v.second.getEdges()) {
-				print("here");
 				std::cout << v.second.getId() << "--" << e.getDistance() << "--" << e.getDest().getId() << std::endl;
-				// print(v.second.getId())
-				// print(e.getDest().getId());
 			}
 		}
 	}
+};
+
+graphtypes
+class bi_graph : public uni_graph<types> {
+public:
+	bi_graph() : uni_graph<types>() {}
+	virtual void addEdge(const _id& d, const _id& s, const _wgt& w) {
+		vertex<types> origin = uni_graph<types>::findVertex(d);
+		vertex<types> dest = uni_graph<types>::findVertex(s);
+
+		edge<types> e(dest,w);
+		edge<types> e2(origin,w);
+		origin.pushEdge(e);
+		dest.pushEdge(e2);
+	}
+
 };

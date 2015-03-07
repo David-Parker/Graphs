@@ -5,5 +5,5 @@ using namespace std;
 
 _String
 inline void print(STR msg) {
-	cout << msg;
+	cout << msg << std::endl;
 }
