@@ -37,7 +37,7 @@ private:
 
 public:
 	vertex() : id(), edges() { edges = new std::vector<edge<types>>(); }
-	vertex(_id name) : id(name), edges() {edges = new std::vector<edge<types>>();}
+	vertex(_id name) : id(name), edges() { edges = new std::vector<edge<types>>(); }
 	void pushEdge(edge<types>& e) {
 		edges->push_back(e);
 	}
@@ -51,6 +51,20 @@ class graph {
 protected:
 	std::unordered_map<_id, vertex<types>> verticies;
 
+	/* Look up the verticies in O(1) using a hash table, if it doesn't exist -- create it. */
+	vertex<types> findVertex(const _id& id) {
+	auto dlookup = verticies.find(id);
+
+	if(dlookup != verticies.end()) {
+		return (dlookup->second);
+	}
+	else {
+		vertex<types> new_d(id);
+		verticies[id] = new_d;
+		return new_d;
+	}
+}
+
 public:
 	graph() : verticies() {}
 	virtual ~graph() {}
@@ -59,26 +73,12 @@ public:
 
 graphtypes
 class uni_graph : public graph<types> {
-protected:
-	vertex<types> findVertex(const _id& id) {
-		auto dlookup = graph<types>::verticies.find(id);
-
-		if(dlookup != graph<types>::verticies.end()) {
-			return (dlookup->second);
-		}
-		else {
-			vertex<types> new_d(id);
-			graph<types>::verticies[id] = new_d;
-			return new_d;
-		}
-	}
-
 public:
 	uni_graph() : graph<types>() {}
 	virtual ~uni_graph() {}
 	virtual void addEdge(const _id& d, const _id& s, const _wgt& w) {
-		vertex<types> origin = findVertex(d);
-		vertex<types> dest = findVertex(s);
+		vertex<types> origin = graph<types>::findVertex(d);
+		vertex<types> dest = graph<types>::findVertex(s);
 		edge<types> e(dest,w);
 		origin.pushEdge(e);
 	}
@@ -98,8 +98,8 @@ class bi_graph : public uni_graph<types> {
 public:
 	bi_graph() : uni_graph<types>() {}
 	virtual void addEdge(const _id& d, const _id& s, const _wgt& w) {
-		vertex<types> origin = uni_graph<types>::findVertex(d);
-		vertex<types> dest = uni_graph<types>::findVertex(s);
+		vertex<types> origin = graph<types>::findVertex(d);
+		vertex<types> dest = graph<types>::findVertex(s);
 
 		edge<types> e(dest,w);
 		edge<types> e2(origin,w);
