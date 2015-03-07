@@ -1,1 +1,1 @@
-g++ -std=c++11 graph.cpp main.cpp -o Build/graphs
+g++ -std=c++11 main.cpp -o Build/graphs

@@ -6,16 +6,16 @@
 #include <map>
 #include <stdio.h>
 #include "lib.h"
-#include "graph.h"
+#include "graph.inl"
 
 using namespace std;
 int main() {
-	bi_graph<int, string> g;
+	uni_graph<int, string> g;
 	g.addEdge("Boston", "Plymouth",50);
 	g.addEdge("Austin", "Boston",3000);
 	g.addEdge("Austin", "Seattle",3500);
-	g.removeEdge("Austin", "Seattle");
-	g.removeEdge("Boston", "Plymouth");
+	// g.removeEdge("Austin", "Seattle");
+	// g.removeEdge("Boston", "Plymouth");
 	g.printEdges();
 	return 0;
 }
