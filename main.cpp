@@ -33,7 +33,6 @@ unordered_map<_id, vertex<TYPES>*> dijkstra(graph<TYPES>& graph, vertex<TYPES>& 
 	while(!queue.empty()) {
 		vertex<TYPES> curr = minDistVertex(queue,dist);
 		if(curr == target) {
-			// cout << "Found!" << endl;
 			return prev;
 		}
 
@@ -86,7 +85,7 @@ int main() {
 	g.addEdge("B","F",2);
 
 	vertex<TYPES> source = g.searchVertex("A");
-	vertex<TYPES> target = g.searchVertex("F");
+	vertex<TYPES> target = g.searchVertex("B");
 	unordered_map<string, vertex<TYPES>*> path = dijkstra<string,int>(g, source, target);
 
 	vector<vertex<TYPES>> finalPath = createPath(path, target);

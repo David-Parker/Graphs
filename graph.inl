@@ -151,7 +151,6 @@ public:
 				/* Find the edge */
 			for(edge<TYPES>& e : origin.getEdges()) {
 				if(e.getDest().getId() == s) {
-					cout << "Deleting : " << origin.getId() << " -- " << e.getDest().getId() << endl;
 					origin.deleteEdge(e);
 				}
 			}
