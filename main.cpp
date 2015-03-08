@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <stdio.h>
 #include <limits>
+#include <Windows.h>
 #include "lib.h"
 #include "graph.inl"
 
@@ -45,19 +46,26 @@ vector<vertex<TYPES>> dijkstra(graph<TYPES>& graph, vertex<TYPES>& source, verte
 	}
 
 	while(!queue.empty()) {
-		vertex<TYPES> curr = minDistVertex(queue,dist);
-		if(curr == target) {
-			return createPath(prev, target);
+		try {
+			vertex<TYPES> curr = minDistVertex(queue,dist);
+			if(curr == target) {
+				return createPath(prev, target);
+			}
+
+			queue.erase(remove(queue.begin(), queue.end(), *curr), queue.end());
+
+			for(auto& e : curr.getEdges()) {
+				_dist total = dist[*curr] + e.getDistance();
+				if(total < dist[*e.getDest()]) {
+					dist[*e.getDest()] = total;
+					prev[*e.getDest()] = &graph.searchVertex(*curr);
+				}
+			}
 		}
 
-		queue.erase(remove(queue.begin(), queue.end(), curr), queue.end());
-
-		for(auto& e : curr.getEdges()) {
-			_dist total = dist[*curr] + e.getDistance();
-			if(total < dist[*e.getDest()]) {
-				dist[*e.getDest()] = total;
-				prev[*e.getDest()] = &graph.searchVertex(*curr);
-			}
+		catch(const char* msg) {
+			cout << "No path from " << *source << " to " << *target << endl;
+			return vector<vertex<TYPES>>();
 		}
 	}
 
@@ -75,24 +83,29 @@ vertex<TYPES> minDistVertex(vector<vertex<TYPES>>& queue, unordered_map<_id, _di
 		}
 	}
 
+	if(minvert == vertex<TYPES>())
+		throw "No possible path";
+
 	return minvert;
 }
 
 int main() {
-	bi_graph<TYPES> g;
+	uni_graph<TYPES> g;
 	g.addEdge("A","B",4);
 	g.addEdge("A","C",1);
 	g.addEdge("C","D",1);
 	g.addEdge("D","B",1);
 	g.addEdge("B","F",2);
 
-	vertex<TYPES> source = g.searchVertex("A");
-	vertex<TYPES> target = g.searchVertex("B");
+	vertex<TYPES> source = g.searchVertex("F");
+	vertex<TYPES> target = g.searchVertex("A");
 
 	vector<vertex<TYPES>> path = dijkstra<string,int>(g, source, target);
 
 	for(auto v : path) {
-		cout << *v << endl;
+		cout << *v;
+		if(*v != *path[path.size() - 1])
+			cout << "->";
 	}
 
 	return 0;
