@@ -10,12 +10,12 @@
 
 using namespace std;
 int main() {
-	uni_graph<int, string> g;
+	bi_graph<int, string> g;
 	g.addEdge("Boston", "Plymouth",50);
 	g.addEdge("Austin", "Boston",3000);
 	g.addEdge("Austin", "Seattle",3500);
-	// g.removeEdge("Austin", "Seattle");
-	// g.removeEdge("Boston", "Plymouth");
+	g.removeEdge("Austin", "Seattle");
+	g.removeEdge("Boston", "Plymouth");
 	g.printEdges();
 	return 0;
 }
