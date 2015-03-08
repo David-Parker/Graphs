@@ -1,11 +1,13 @@
 #include <unordered_map>
 #include <iostream>
 #include <vector>
+#include <deque>
 #include <string>
 #include <algorithm>
 
 #define GRAPHTYPES template<typename _wgt, typename _id>
 #define TYPES _wgt,_id
+#define INF std::numeric_limits<int>::max()
 
 /* Abstract Graph */
 GRAPHTYPES class vertex;
@@ -15,6 +17,8 @@ GRAPHTYPES class graph;
 /* Concrete graphs */
 GRAPHTYPES class uni_graph;
 GRAPHTYPES class bi_graph;
+
+using namespace std;
 
 GRAPHTYPES
 class edge {
@@ -214,6 +218,81 @@ public:
 		}
 	}
 };
+
+/* Global functions for path finding */
+GRAPHTYPES
+deque<vertex<TYPES>> createPath(unordered_map<_id, vertex<TYPES>*>& path, vertex<TYPES> target) {
+	deque<vertex<TYPES>> unwind;
+	vertex<TYPES>* walk = path[*target];
+	unwind.push_front(target);
+	while(walk != NULL) {
+		unwind.insert(unwind.begin(), **walk);
+		walk = path[**walk];
+	}
+	return unwind;
+}
+
+/* BFS - Returns a vector of verticies that is a the path from source to target */
+GRAPHTYPES
+deque<vertex<TYPES>> dijkstra(graph<TYPES>& graph, vertex<TYPES>& source, vertex<TYPES>& target) {
+	unordered_map<_id, _wgt> dist;
+	unordered_map<_id, vertex<TYPES>*> prev;
+	vector<vertex<TYPES>> queue;
+
+	dist[*source] = 0;
+	prev[*source] = NULL;
+
+	for(auto& v : graph.getVerticies()) {
+		if(*v.second != *source) {
+			dist[*v.second] = INF;
+			prev[*v.second] = NULL;
+		}
+		queue.push_back(v.second);
+	}
+
+	while(!queue.empty()) {
+		try {
+			vertex<TYPES> curr = minDistVertex(queue,dist);
+			if(curr == target) {
+				return createPath(prev, target);
+			}
+
+			queue.erase(remove(queue.begin(), queue.end(), *curr), queue.end());
+
+			for(auto& e : curr.getEdges()) {
+				_wgt total = dist[*curr] + e.getDistance();
+				if(total < dist[*e.getDest()]) {
+					dist[*e.getDest()] = total;
+					prev[*e.getDest()] = &graph.searchVertex(*curr);
+				}
+			}
+		}
+
+		catch(const char* msg) {
+			cout << "No path from " << *source << " to " << *target << endl;
+			return deque<vertex<TYPES>>();
+		}
+	}
+
+	return createPath(prev, target);
+}
+
+GRAPHTYPES
+vertex<TYPES> minDistVertex(vector<vertex<TYPES>>& queue, unordered_map<_id, _wgt>& dist) {
+	int min = INF;
+	vertex<TYPES> minvert;
+	for(auto& v : queue) {
+		if(dist[v.getId()] < min) {
+			minvert = v;
+			min = dist[*v];
+		}
+	}
+
+	if(minvert == vertex<TYPES>())
+		throw "No possible path";
+
+	return minvert;
+}
 
 #undef GRAPHTYPES
 #undef TYPES
