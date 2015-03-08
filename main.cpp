@@ -90,15 +90,15 @@ vertex<TYPES> minDistVertex(vector<vertex<TYPES>>& queue, unordered_map<_id, _di
 }
 
 int main() {
-	uni_graph<TYPES> g;
+	bi_graph<TYPES> g;
 	g.addEdge("A","B",4);
 	g.addEdge("A","C",1);
 	g.addEdge("C","D",1);
 	g.addEdge("D","B",1);
 	g.addEdge("B","F",2);
 
-	vertex<TYPES> source = g.searchVertex("F");
-	vertex<TYPES> target = g.searchVertex("A");
+	vertex<TYPES> source = g.searchVertex("A");
+	vertex<TYPES> target = g.searchVertex("F");
 
 	vector<vertex<TYPES>> path = dijkstra<string,int>(g, source, target);
 

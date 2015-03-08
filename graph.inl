@@ -169,9 +169,9 @@ public:
 };
 
 GRAPHTYPES
-class bi_graph : public uni_graph<TYPES> {
+class bi_graph : public graph<TYPES> {
 public:
-	bi_graph() : uni_graph<TYPES>() {}
+	bi_graph() : graph<TYPES>() {}
 	virtual void addEdge(const _id& d, const _id& s, const _wgt& w) {
 		vertex<TYPES>& origin = graph<TYPES>::findOrCreateVertex(d);
 		vertex<TYPES>& dest = graph<TYPES>::findOrCreateVertex(s);
