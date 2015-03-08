@@ -62,6 +62,13 @@ public:
 	_id getId() const { return id; }
 	std::vector<edge<TYPES>>& getEdges() { return edges; }
 
+	bool operator==(const vertex<TYPES>& rhs) {
+		return this->id == rhs.id;
+	}
+	_id operator*() {
+		return id;
+	}
+
 };
 
 GRAPHTYPES
@@ -105,6 +112,9 @@ public:
 			}
 		}
 	}
+
+	std::unordered_map<_id, vertex<TYPES>>& getVerticies() { return verticies; }
+
 
 	/* Look up the vertex, but do not create a new one if it doesn't exist */
 	vertex<TYPES>& searchVertex(const _id& id) {
