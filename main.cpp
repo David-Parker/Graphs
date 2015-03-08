@@ -14,8 +14,12 @@ int main() {
 	g.addEdge("Boston", "Plymouth",50);
 	g.addEdge("Austin", "Boston",3000);
 	g.addEdge("Austin", "Seattle",3500);
-	g.removeEdge("Austin", "Seattle");
+	// g.removeEdge("Austin", "Seattle");
 	g.removeEdge("Boston", "Plymouth");
-	g.printEdges();
+
+	vertex<int, string> v = g.searchVertex("Austin");
+	for(auto& e : v.getEdges())
+		cout << v.getId() << " -- " << e.getDest().getId() << endl;
+	// g.printEdges();
 	return 0;
 }

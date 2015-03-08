@@ -30,7 +30,6 @@ public:
 	_wgt getDistance() { return distance; }
 
 	bool operator==(const edge<TYPES>& rhs) {
-		// return this == &rhs;
 		return ((this->dest.getId()) == (rhs.dest.getId()));
 	}
 
@@ -56,10 +55,8 @@ public:
 		edges.push_back(e);
 	}
 
-	void deleteEdge(edge<TYPES>& e) {
-		cout << id << " Size before: " << edges.size() << endl;
+	void deleteEdge(const edge<TYPES>& e) {
 		edges.erase(std::remove(edges.begin(), edges.end(), e), edges.end());
-		cout << id << " Size after: " << edges.size() << endl;
 	}
 
 	_id getId() const { return id; }
@@ -86,24 +83,12 @@ protected:
 		}
 	}
 
-	/* Look up the vertex, but do not create a new one if it doesn't exist */
-	vertex<TYPES>& searchVertex(const _id& id) {
-		auto dlookup = verticies.find(id);
-
-		if(dlookup != verticies.end()) {
-			return (dlookup->second);
-		}
-		else {
-			throw "Vertex does not exist";
-		}
-	}
-
 	void removeVertex(const vertex<TYPES>& v) {
 		verticies.erase(verticies.find(v.getId()));
 	}
 
-	void checkAndRemoveGarbage(const vertex<TYPES>& v) {
-		if(v.origin.getEdges().size() == 0 && v.getIncomingEdges() == 0)
+	void checkAndRemoveGarbage(vertex<TYPES>& v) {
+		if(v.getEdges().size() == 0 && v.getIncomingEdges() == 0)
 			removeVertex(v);
 	}
 
@@ -115,10 +100,21 @@ public:
 	void printEdges() {
 		for(auto v : verticies) {
 			std::cout << std::endl << v.second.getId() << ": " << std::endl;
-			std::cout << "Size of edges list: " << v.second.getEdges().size() << std::endl;
 			for(edge<TYPES>& e : v.second.getEdges()) {
 				std::cout << v.second.getId() << "--" << e.getDistance() << "--" << e.getDest().getId() << std::endl;
 			}
+		}
+	}
+
+	/* Look up the vertex, but do not create a new one if it doesn't exist */
+	vertex<TYPES>& searchVertex(const _id& id) {
+		auto dlookup = verticies.find(id);
+
+		if(dlookup != verticies.end()) {
+			return (dlookup->second);
+		}
+		else {
+			throw "Vertex does not exist";
 		}
 	}
 };
@@ -138,32 +134,28 @@ public:
 	}
 
 	virtual void removeEdge(const _id& d, const _id& s) {
-		vertex<TYPES> origin;
-		// vertex<TYPES> dest;
 		try {
-			origin = graph<TYPES>::searchVertex(d);
-			// dest = graph<TYPES>::searchVertex(s);
+			vertex<TYPES>& origin = graph<TYPES>::searchVertex(d);
+			vertex<TYPES>& dest = graph<TYPES>::searchVertex(s);
+
+				/* Find the edge */
+			for(edge<TYPES>& e : origin.getEdges()) {
+				if(e.getDest().getId() == s) {
+					cout << "Deleting : " << origin.getId() << " -- " << e.getDest().getId() << endl;
+					origin.deleteEdge(e);
+				}
+			}
+
+			dest.removeIncomingEdge();
+
+			/* Remove a node that has no more edges */
+			graph<TYPES>::checkAndRemoveGarbage(origin);
+			graph<TYPES>::checkAndRemoveGarbage(dest);
 		}
 		catch(const char* msg) {
 			std::cout << msg << std::endl;
 			return;
 		}
-		/* Find the edge */
-		for(edge<TYPES>& e : origin.getEdges()) {
-			if(e.getDest().getId() == s) {
-				cout << "Deleting : " << origin.getId() << " -- " << e.getDest().getId() << endl;
-				origin.deleteEdge(e);
-			}
-		}
-
-		// dest.removeIncomingEdge();
-
-		/* Remove a node that has no more edges */
-		// if(origin.getEdges().size() == 0 && origin.getIncomingEdges() == 0)
-		// 	graph<TYPES>::removeVertex(origin);
-		// if(dest.getEdges().size() == 0 && dest.getIncomingEdges() == 0)
-		// 	graph<TYPES>::removeVertex(dest);
-
 	}
 };
 
@@ -175,6 +167,9 @@ public:
 		vertex<TYPES>& origin = graph<TYPES>::findOrCreateVertex(d);
 		vertex<TYPES>& dest = graph<TYPES>::findOrCreateVertex(s);
 
+		origin.addIncomingEdge();
+		dest.addIncomingEdge();
+
 		edge<TYPES> e(dest,w);
 		edge<TYPES> e2(origin,w);
 		origin.pushEdge(e);
@@ -182,27 +177,33 @@ public:
 	}
 
 	virtual void removeEdge(const _id& d, const _id& s) {
-		vertex<TYPES> origin;
-		vertex<TYPES> dest;
 		try {
-			origin = graph<TYPES>::searchVertex(d);
-			dest = graph<TYPES>::searchVertex(s);
+			vertex<TYPES>& origin = graph<TYPES>::searchVertex(d);
+			vertex<TYPES>& dest = graph<TYPES>::searchVertex(s);
+
+			/* Find the edges */
+			for(edge<TYPES>& e : origin.getEdges()) {
+				if(e.getDest().getId() == s)
+					origin.deleteEdge(e);
+			}
+			for(edge<TYPES>& e : dest.getEdges()) {
+				if(e.getDest().getId() == d)
+					dest.deleteEdge(e);
+			}
+
+			origin.removeIncomingEdge();
+			dest.removeIncomingEdge();
+
+			/* Remove a node that has no more edges */
+			graph<TYPES>::checkAndRemoveGarbage(origin);
+			graph<TYPES>::checkAndRemoveGarbage(dest);
 		}
+
 		catch(const char* msg) {
 			std::cout << msg << std::endl;
 			return;
 		}
-		/* Find the edges */
-		for(edge<TYPES>& e : origin.getEdges()) {
-			if(e.getDest().getId() == s)
-				origin.deleteEdge(e);
-		}
-		for(edge<TYPES>& e : dest.getEdges()) {
-			if(e.getDest().getId() == d)
-				dest.deleteEdge(e);
-		}
 	}
-
 };
 
 #undef GRAPHTYPES
