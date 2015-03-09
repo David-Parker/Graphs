@@ -17,8 +17,8 @@ int main() {
 	deque<vertex<int, string>> path = dijkstra<int, string>(g, source, target);
 
 	for(auto v : path) {
-		cout << *v;
-		if(*v != *path[path.size() - 1])
+		cout << v.getId();
+		if(v.getId() != path[path.size() - 1].getId())
 			cout << "->";
 	}
 

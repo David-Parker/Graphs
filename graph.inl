@@ -70,9 +70,6 @@ public:
 	bool operator==(const vertex<TYPES>& rhs) {
 		return this->id == rhs.id;
 	}
-	_id operator*() {
-		return id;
-	}
 
 };
 
@@ -226,11 +223,11 @@ public:
 GRAPHTYPES
 deque<vertex<TYPES>> createPath(unordered_map<_id, vertex<TYPES>*>& path, vertex<TYPES> target) {
 	deque<vertex<TYPES>> unwind;
-	vertex<TYPES>* walk = path[*target];
+	vertex<TYPES>* walk = path[target.getId()];
 	unwind.push_front(target);
 	while(walk != NULL) {
-		unwind.insert(unwind.begin(), **walk);
-		walk = path[**walk];
+		unwind.insert(unwind.begin(), walk->getId());
+		walk = path[walk->getId()];
 	}
 	return unwind;
 }
@@ -242,13 +239,13 @@ deque<vertex<TYPES>> dijkstra(graph<TYPES>& graph, vertex<TYPES>& source, vertex
 	unordered_map<_id, vertex<TYPES>*> prev;
 	vector<vertex<TYPES>> queue;
 
-	dist[*source] = 0;
-	prev[*source] = NULL;
+	dist[source.getId()] = 0;
+	prev[source.getId()] = NULL;
 
 	for(auto& v : graph.getVerticies()) {
-		if(*v.second != *source) {
-			dist[*v.second] = INF;
-			prev[*v.second] = NULL;
+		if(v.second.getId() != source.getId()) {
+			dist[v.second.getId()] = INF;
+			prev[v.second.getId()] = NULL;
 		}
 		queue.push_back(v.second);
 	}
@@ -260,19 +257,19 @@ deque<vertex<TYPES>> dijkstra(graph<TYPES>& graph, vertex<TYPES>& source, vertex
 				return createPath(prev, target);
 			}
 
-			queue.erase(remove(queue.begin(), queue.end(), *curr), queue.end());
+			queue.erase(remove(queue.begin(), queue.end(), curr.getId()), queue.end());
 
 			for(auto& e : curr.getEdges()) {
-				_wgt total = dist[*curr] + e.getDistance();
+				_wgt total = dist[curr.getId()] + e.getDistance();
 				if(total < dist[e.getDest()]) {
 					dist[e.getDest()] = total;
-					prev[e.getDest()] = &graph.searchVertex(*curr);
+					prev[e.getDest()] = &graph.searchVertex(curr.getId());
 				}
 			}
 		}
 
 		catch(const char* msg) {
-			cout << "No path from " << *source << " to " << *target << endl;
+			cout << "No path from " << source.getId() << " to " << target.getId() << endl;
 			return deque<vertex<TYPES>>();
 		}
 	}
@@ -287,7 +284,7 @@ vertex<TYPES> minDistVertex(vector<vertex<TYPES>>& queue, unordered_map<_id, _wg
 	for(auto& v : queue) {
 		if(dist[v.getId()] < min) {
 			minvert = v;
-			min = dist[*v];
+			min = dist[v.getId()];
 		}
 	}
 
