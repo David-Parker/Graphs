@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <unordered_map>
 #include <iostream>
 #include <vector>
@@ -23,18 +24,18 @@ using namespace std;
 GRAPHTYPES
 class edge {
 private:
-	vertex<TYPES> dest;
+	_id dest;
 	_wgt distance;
 
 public:
-	edge(const vertex<TYPES>& _dest, const _wgt& _distance) :
+	edge(const _id& _dest, const _wgt& _distance) :
 		 dest(_dest), distance(_distance) {}
 
-	vertex<TYPES> getDest() { return dest; }
+	_id getDest() { return dest; }
 	_wgt getDistance() { return distance; }
 
 	bool operator==(const edge<TYPES>& rhs) {
-		return ((this->dest.getId()) == (rhs.dest.getId()));
+		return (dest == rhs.dest);
 	}
 
 	bool operator!=(const edge<TYPES>& rhs) {
@@ -112,7 +113,7 @@ public:
 		for(auto v : verticies) {
 			std::cout << std::endl << v.second.getId() << ": " << std::endl;
 			for(edge<TYPES>& e : v.second.getEdges()) {
-				std::cout << v.second.getId() << "--" << e.getDistance() << "--" << e.getDest().getId() << std::endl;
+				std::cout << v.second.getId() << "--" << e.getDistance() << "--" << e.getDest() << std::endl;
 			}
 		}
 	}
@@ -133,44 +134,6 @@ public:
 	}
 };
 
-GRAPHTYPES
-class uni_graph : public graph<TYPES> {
-public:
-	uni_graph() : graph<TYPES>() {}
-	virtual ~uni_graph() {}
-	virtual void addEdge(const _id& d, const _id& s, const _wgt& w) {
-		vertex<TYPES>& origin = graph<TYPES>::findOrCreateVertex(d);
-		vertex<TYPES>& dest = graph<TYPES>::findOrCreateVertex(s);
-		dest.addIncomingEdge();
-
-		edge<TYPES> e(dest,w);
-		origin.pushEdge(e);
-	}
-
-	virtual void removeEdge(const _id& d, const _id& s) {
-		try {
-			vertex<TYPES>& origin = graph<TYPES>::searchVertex(d);
-			vertex<TYPES>& dest = graph<TYPES>::searchVertex(s);
-
-				/* Find the edge */
-			for(edge<TYPES>& e : origin.getEdges()) {
-				if(e.getDest().getId() == s) {
-					origin.deleteEdge(e);
-				}
-			}
-
-			dest.removeIncomingEdge();
-
-			/* Remove a node that has no more edges */
-			graph<TYPES>::checkAndRemoveGarbage(origin);
-			graph<TYPES>::checkAndRemoveGarbage(dest);
-		}
-		catch(const char* msg) {
-			std::cout << msg << std::endl;
-			return;
-		}
-	}
-};
 
 GRAPHTYPES
 class bi_graph : public graph<TYPES> {
@@ -183,8 +146,8 @@ public:
 		origin.addIncomingEdge();
 		dest.addIncomingEdge();
 
-		edge<TYPES> e(dest,w);
-		edge<TYPES> e2(origin,w);
+		edge<TYPES> e(s,w);
+		edge<TYPES> e2(d,w);
 		origin.pushEdge(e);
 		dest.pushEdge(e2);
 	}
@@ -196,11 +159,11 @@ public:
 
 			/* Find the edges */
 			for(edge<TYPES>& e : origin.getEdges()) {
-				if(e.getDest().getId() == s)
+				if(e.getDest() == s)
 					origin.deleteEdge(e);
 			}
 			for(edge<TYPES>& e : dest.getEdges()) {
-				if(e.getDest().getId() == d)
+				if(e.getDest() == d)
 					dest.deleteEdge(e);
 			}
 
@@ -219,6 +182,46 @@ public:
 	}
 };
 
+GRAPHTYPES
+class uni_graph : public graph<TYPES> {
+public:
+	uni_graph() : graph<TYPES>() {}
+	virtual ~uni_graph() {}
+	virtual void addEdge(const _id& d, const _id& s, const _wgt& w) {
+		vertex<TYPES>& origin = graph<TYPES>::findOrCreateVertex(d);
+		vertex<TYPES>& dest = graph<TYPES>::findOrCreateVertex(s);
+		dest.addIncomingEdge();
+
+		edge<TYPES> e(s,w);
+		origin.pushEdge(e);
+	}
+
+	virtual void removeEdge(const _id& d, const _id& s) {
+		try {
+			vertex<TYPES>& origin = graph<TYPES>::searchVertex(d);
+			vertex<TYPES>& dest = graph<TYPES>::searchVertex(s);
+
+				/* Find the edge */
+			for(edge<TYPES>& e : origin.getEdges()) {
+				if(e.getDest() == s) {
+					origin.deleteEdge(e);
+				}
+			}
+
+			dest.removeIncomingEdge();
+
+			/* Remove a node that has no more edges */
+			graph<TYPES>::checkAndRemoveGarbage(origin);
+			graph<TYPES>::checkAndRemoveGarbage(dest);
+		}
+		catch(const char* msg) {
+			std::cout << msg << std::endl;
+			return;
+		}
+	}
+};
+
+
 /* Global functions for path finding */
 GRAPHTYPES
 deque<vertex<TYPES>> createPath(unordered_map<_id, vertex<TYPES>*>& path, vertex<TYPES> target) {
@@ -232,7 +235,7 @@ deque<vertex<TYPES>> createPath(unordered_map<_id, vertex<TYPES>*>& path, vertex
 	return unwind;
 }
 
-/* BFS - Returns a vector of verticies that is a the path from source to target */
+/* BFS - Returns a deque of verticies that is a the path from source to target */
 GRAPHTYPES
 deque<vertex<TYPES>> dijkstra(graph<TYPES>& graph, vertex<TYPES>& source, vertex<TYPES>& target) {
 	unordered_map<_id, _wgt> dist;
@@ -261,9 +264,9 @@ deque<vertex<TYPES>> dijkstra(graph<TYPES>& graph, vertex<TYPES>& source, vertex
 
 			for(auto& e : curr.getEdges()) {
 				_wgt total = dist[*curr] + e.getDistance();
-				if(total < dist[*e.getDest()]) {
-					dist[*e.getDest()] = total;
-					prev[*e.getDest()] = &graph.searchVertex(*curr);
+				if(total < dist[e.getDest()]) {
+					dist[e.getDest()] = total;
+					prev[e.getDest()] = &graph.searchVertex(*curr);
 				}
 			}
 		}
